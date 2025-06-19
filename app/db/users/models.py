@@ -21,7 +21,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    username: Mapped[str] = mapped_column(String(20), unique=True)
+    username: Mapped[str] = mapped_column(String(20), unique=True, index=True)
     password_: Mapped[str] = mapped_column(String(100))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -37,14 +37,14 @@ class User(Base):
     def password(self, pwd):
         self.password_ = pwd_context.hash(pwd)
 
-        def is_verify_password(self, pwd):
-            return pwd_context.verify(pwd, self.password_)
+    def is_verify_password(self, pwd):
+        return pwd_context.verify(pwd, self.password_)
 
 
-        def create_token(self, expires_delta: int = settings.acces_token_expire_minutes  ):
-            expire = datetime.now(timezone.utc) + expires_delta
-            payload = dict(sub=self.username, exp=expire)
-            return jwt.encode(payload=payload, key=settings.secret_key, algorithm=settings.algorithm)
+    def create_token(self, expires_delta: int = settings.acces_token_expire_minutes  ):
+        expire = datetime.now(timezone.utc) + expires_delta
+        payload = dict(sub=self.username, exp=expire)
+        return jwt.encode(payload=payload, key=settings.secret_key, algorithm=settings.algorithm)
 
 
 
