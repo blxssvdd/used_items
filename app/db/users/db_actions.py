@@ -7,11 +7,11 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.db.users.models import User, get_db
+from app.db.users.models import User
 from app.config import settings
 
 
-def decode_jwt(token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/urers/token/"))]):
+def decode_jwt(token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/users/token/"))]):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -19,7 +19,7 @@ def decode_jwt(token: Annotated[str, Depends(OAuth2PasswordBearer(tokenUrl="/ure
     )
     
     try:
-        payload = jwt.decode(payload=payload, key=settings.secret_key, algorithm=[settings.algorithm])
+        payload = jwt.decode(token, key=settings.secret_key, algorithms=[settings.algorithm])
         username = payload.get("sub")
         if not username:
             raise credentials_exception
@@ -48,7 +48,7 @@ async def sign_up(username: str, password: str, db: AsyncSession):
 
 async def sign_in(username: str, password: str, db: AsyncSession) -> str:
     user = await get_user(username=username, db=db)
-    if not user or user.is_verify_password(password):
+    if not user or not user.is_verify_password(password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Неправильний логін або пароль")
     return user.create_token()
     
